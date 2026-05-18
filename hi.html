@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="hi" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FB Videos Mass Downloader — Facebook वीडियो बल्क डाउनलोडर</title>
+  <meta name="description" content="किसी भी Facebook पेज से सभी वीडियो रिकर्सिवली डाउनलोड करें। गुणवत्ता चुनें, बैच डाउनलोड, Linux और Windows पर चलता है।">
+  <meta property="og:title" content="FB Videos Mass Downloader — Facebook वीडियो बल्क डाउनलोडर">
+  <meta property="og:description" content="किसी भी Facebook पेज से सभी वीडियो रिकर्सिवली डाउनलोड करें। गुणवत्ता चुनें, बैच डाउनलोड, Linux और Windows पर चलता है।">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&display=swap');
+body { font-family: 'Noto Sans Devanagari', var(--sans) !important; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Jost:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap');
+
+  :root {
+    --bg:      #07070e;
+    --bg2:     #0f0f1a;
+    --card:    #14141f;
+    --border:  #252535;
+    --prim:    #4facfe;
+    --prim2:   #00f2fe;
+    --fb:      #1877f2;
+    --accent:  #fe4f8e;
+    --text:    #dde1f0;
+    --muted:   #6b6b88;
+    --mono:    'Fira Code', monospace;
+    --sans:    'Jost', sans-serif;
+    --display: 'Bebas Neue', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 1rem;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  a { color: var(--prim); text-decoration: none; }
+  a:hover { color: var(--prim2); }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,7,14,0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+  }
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--prim), var(--prim2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+  }
+  .lang-switcher {
+    display: flex; flex-wrap: wrap; gap: 0.3rem;
+    justify-content: flex-end;
+  }
+  .lang-switcher a {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .lang-switcher a:hover, .lang-switcher a.active {
+    border-color: var(--prim);
+    color: var(--prim);
+    background: rgba(79,172,254,0.08);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 92vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 5rem 1.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,172,254,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(24,119,242,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--prim);
+    border: 1px solid rgba(79,172,254,0.4);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(2.4rem, 7vw, 5.5rem);
+    letter-spacing: 3px;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #fff 30%, var(--prim2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    max-width: 900px;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 640px;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+  .hero-btns {
+    margin-top: 2.5rem;
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    justify-content: center;
+    animation: fadeUp 0.7s 0.35s ease both;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-block;
+    padding: 0.85rem 2rem;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--prim), var(--prim2));
+    color: #07070e;
+    box-shadow: 0 4px 24px rgba(79,172,254,0.35);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(79,172,254,0.5);
+    color: #07070e;
+  }
+  .btn-outline {
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    background: transparent;
+  }
+  .btn-outline:hover {
+    background: rgba(254,79,142,0.1);
+    transform: translateY(-2px);
+    color: var(--accent);
+  }
+
+  /* SECTIONS */
+  section { padding: 5rem 1.5rem; }
+
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 3rem;
+    background: linear-gradient(135deg, var(--text) 50%, var(--prim) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .feat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.8rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--prim), var(--prim2));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feat-card:hover { border-color: rgba(79,172,254,0.4); transform: translateY(-4px); }
+  .feat-card:hover::before { opacity: 1; }
+  .feat-icon { font-size: 2rem; display: block; margin-bottom: 0.8rem; }
+  .feat-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+  .feat-card p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+  /* HOW IT WORKS */
+  .how-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .steps { display: flex; flex-direction: column; gap: 2rem; max-width: 700px; margin: 0 auto; }
+  .step { display: flex; align-items: flex-start; gap: 1.5rem; }
+  .step-num {
+    flex-shrink: 0;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 2px solid var(--prim);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-size: 1.6rem;
+    color: var(--prim);
+    background: rgba(79,172,254,0.07);
+  }
+  .step-body h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .step-body p { color: var(--muted); font-size: 0.95rem; }
+
+  /* FREE SECTION */
+  .free-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 3rem 2rem;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .free-box h2 {
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    color: var(--prim2);
+  }
+  .free-box p { color: var(--muted); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .github-url {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    margin-top: 1rem;
+    word-break: break-all;
+  }
+
+  /* FULL VERSION / PRICING */
+  .pricing-section { background: var(--bg2); border-top: 1px solid var(--border); }
+  .pricing-box {
+    max-width: 700px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(79,172,254,0.06), rgba(0,242,254,0.03));
+    border: 1.5px solid rgba(79,172,254,0.3);
+    border-radius: 20px;
+    padding: 3.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .pricing-box::after {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,172,254,0.12), transparent 70%);
+    pointer-events: none;
+  }
+  .pricing-box h2 {
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  .pricing-box p { color: var(--muted); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .price-tag {
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+  .price-label { font-size: 1rem; color: var(--muted); }
+  .price-amount {
+    font-family: var(--display);
+    font-size: 3.5rem;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--prim), var(--prim2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .pricing-note {
+    margin-top: 1.2rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* GRID BACKGROUND */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* RTL support */
+  [dir="rtl"] .lang-switcher { justify-content: flex-start; }
+  [dir="rtl"] .step { flex-direction: row-reverse; }
+  [dir="rtl"] .nav-logo { letter-spacing: 0; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    nav { flex-direction: column; align-items: flex-start; }
+    .lang-switcher { justify-content: flex-start; }
+    .hero-btns { flex-direction: column; align-items: center; }
+    .step { flex-direction: column; }
+  }
+
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">FB&#8202;MASS&#8202;DL</span>
+  <div class="lang-switcher">
+    <a href="index.html">🇬🇧 English</a>
+            <a href="es.html">🇪🇸 Español</a>
+            <a href="fr.html">🇫🇷 Français</a>
+            <a href="de.html">🇩🇪 Deutsch</a>
+            <a href="ar.html">🇸🇦 العربية</a>
+            <a href="zh.html">🇨🇳 中文</a>
+            <a href="pt.html">🇧🇷 Português</a>
+            <a href="ru.html">🇷🇺 Русский</a>
+            <a href="ja.html">🇯🇵 日本語</a>
+            <a href="hi.html" class="active">🇮🇳 हिन्दी</a>
+            <a href="ko.html">🇰🇷 한국어</a>
+            <a href="it.html">🇮🇹 Italiano</a>
+            <a href="tr.html">🇹🇷 Türkçe</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="hero-tag">Linux और Windows</span>
+  <h1>किसी भी Facebook पेज से सभी वीडियो डाउनलोड करें</h1>
+  <p class="hero-sub">किसी भी सार्वजनिक Facebook पेज से सभी वीडियो का रिकर्सिव बल्क-डाउनलोड — गुणवत्ता चुनें, सीमाएं सेट करें, और चलने दें।</p>
+  <div class="hero-btns">
+    <a href="https://github.com/uhfste/fb_videos_mass_downloader/releases/tag/FB_mass_video_downloader_10_videos_limit" class="btn btn-primary" target="_blank" rel="noopener">⬇ निःशुल्क ट्रायल (10 वीडियो)</a>
+    <a href="mailto:uhfste@gmail.com?subject=Full Version Purchase" class="btn btn-outline">पूर्ण संस्करण — $40</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="section-inner">
+    <h2 class="section-title">FB Mass Downloader क्यों चुनें?</h2>
+    <div class="features-grid">
+      <div class="feat-card">
+        <span class="feat-icon">🔗</span>
+        <h3>कोई भी पेज URL</h3>
+        <p>कोई भी Facebook पेज URL पेस्ट करें और टूल स्वचालित रूप से सभी वीडियो क्रॉल करके कतार में लगाता है।</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🎬</span>
+        <h3>गुणवत्ता चयन</h3>
+        <p>डाउनलोड से पहले अपनी पसंदीदा वीडियो गुणवत्ता — HD, SD या केवल ऑडियो — चुनें।</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">♻️</span>
+        <h3>रिकर्सिव डाउनलोड</h3>
+        <p>पेज के पूरे इतिहास में सभी वीडियो को स्वचालित रूप से फॉलो और डाउनलोड करता है।</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">💻</span>
+        <h3>Linux और Windows</h3>
+        <p>Linux (AppImage / .deb) और Windows (.exe) दोनों के लिए नेटिव इंस्टॉलर। Python की जरूरत नहीं।</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⚡</span>
+        <h3>तेज और समानांतर</h3>
+        <p>मल्टी-थ्रेडेड इंजन अधिकतम गति के लिए एक साथ कई वीडियो डाउनलोड करता है।</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔒</span>
+        <h3>कोई अकाउंट नहीं चाहिए</h3>
+        <p>बिना Facebook अकाउंट या API कुंजी के सभी सार्वजनिक पेजों पर काम करता है।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-inner">
+    <h2 class="section-title">यह कैसे काम करता है</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>URL पेस्ट करें</h3>
+          <p>जिस Facebook पेज को आप आर्काइव करना चाहते हैं उसका URL इनपुट फील्ड में दर्ज करें।</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>गुणवत्ता चुनें</h3>
+          <p>अपनी पसंदीदा वीडियो रिज़ॉल्यूशन और आउटपुट फोल्डर चुनें।</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>डाउनलोड क्लिक करें</h3>
+          <p>डाउनलोड दबाएं और देखें कि टूल पेज पर हर वीडियो को रिकर्सिवली कैसे फेच करता है।</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FREE DOWNLOAD -->
+<section>
+  <div class="section-inner">
+    <div class="free-box">
+      <h2>निःशुल्क आज़माएं — 10 वीडियो सीमा</h2>
+      <p>निःशुल्क ट्रायल डाउनलोड करें और टूल को काम करते देखें। निःशुल्क संस्करण प्रति रन 10 वीडियो तक डाउनलोड करता है।</p>
+      <a href="https://github.com/uhfste/fb_videos_mass_downloader/releases/tag/FB_mass_video_downloader_10_videos_limit" class="btn btn-primary" target="_blank" rel="noopener">⬇ GitHub पर निःशुल्क ट्रायल डाउनलोड करें</a>
+      <div class="github-url">https://github.com/uhfste/fb_videos_mass_downloader/releases/tag/FB_mass_video_downloader_10_videos_limit</div>
+    </div>
+  </div>
+</section>
+
+<!-- FULL VERSION / PRICING -->
+<section class="pricing-section">
+  <div class="section-inner">
+    <div class="pricing-box">
+      <h2>🚀 क्या आप असीमित पूर्ण संस्करण चाहते हैं?</h2>
+      <p>पूर्ण संस्करण सभी सीमाएं हटा देता है — एक ही रन में हजारों वीडियो डाउनलोड करें। रुचि है? अपनी व्यक्तिगत लाइसेंस प्रति पाने के लिए ईमेल करें।</p>
+      <div class="price-tag">
+        <span class="price-label">पूर्ण संस्करण मूल्य:</span>
+        <span class="price-amount">$40</span>
+      </div>
+      <a href="mailto:uhfste@gmail.com?subject=Full Version Purchase - FB Mass Downloader" class="btn btn-primary">✉ खरीदारी के लिए ईमेल करें</a>
+      <p class="pricing-note">uhfste@gmail.com</p>
+      <p class="pricing-note">उत्तर में सीधा डाउनलोड लिंक और लाइसेंस कुंजी शामिल है। आजीवन एक्सेस, कोई सब्सक्रिप्शन नहीं।</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>FB Videos Mass Downloader &copy; 2025 &mdash; सर्वाधिकार सुरक्षित।</p>
+</footer>
+
+</body>
+</html>
